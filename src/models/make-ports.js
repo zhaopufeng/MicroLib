@@ -44,20 +44,20 @@ function setPortTimeout(options) {
   const timerArgs = getRetries(args);
   const expired = () => timerArgs.count > maxRetry;
 
-  const noOp = {
+  const timer = {
     enabled: false,
-    stopTimer: () => void 0,
+    stop: () => void 0,
     expired,
   };
 
   if (noTimer) {
-    return noOp;
+    return timer;
   }
 
   if (expired()) {
     model.emit(domainEvents.portRetryFailed(model), options);
     return {
-      ...noOp,
+      ...timer,
       enabled: true,
     };
   }
@@ -78,9 +78,9 @@ function setPortTimeout(options) {
   }, timeout);
 
   return {
-    ...noOp,
+    ...timer,
     enabled: true,
-    stopTimer: () => clearTimeout(timerId),
+    stop: () => clearTimeout(timerId),
   };
 }
 
@@ -225,7 +225,7 @@ export default function makePorts(ports, adapters, observer) {
           const model = await adapters[port]({ model: this, port, args });
 
           // Stop the timer
-          timer.stopTimer();
+          timer.stop();
 
           // Remember what ports we called for undo and restart
           const saved = await updatePortFlow(model, port, rememberPort);

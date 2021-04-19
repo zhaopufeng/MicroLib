@@ -1,6 +1,7 @@
 const { URL } = require("url");
 const http = require("http");
 const fs = require("fs");
+const WebpackNodeHttpChunkLoadingPlugin = require("../../custom-chunk-loading-plugin");
 
 const https = require("https");
 const httpsAgent = new https.Agent({
@@ -38,20 +39,25 @@ module.exports = async remoteEntry => {
       console.log(path);
 
       return new Promise(resolve => {
-        const rslv = () => resolve({ [entry.name]: path });
+        const rslv = () =>
+          resolve({
+            [entry.name]: WebpackNodeHttpChunkLoadingPlugin.httpExternal(
+              entry.url
+            ),
+          });
 
-        const req = https.request(entry.url, { httpsAgent }, res => {
-          res.on("error", rslv);
-          if (res.statusCode < 200 || res.statusCode >= 300) {
-            return rslv();
-          }
-          res.pipe(fs.createWriteStream(path));
+        // const req = https.request(entry.url, { httpsAgent }, res => {
+        //   res.on("error", rslv);
+        //   if (res.statusCode < 200 || res.statusCode >= 300) {
+        //     return rslv();
+        //   }
+        //   res.pipe(fs.createWriteStream(path));
 
-          res.on("end", rslv);
-        });
+        //   res.on("end", rslv);
+        // });
 
-        req.on("error", rslv);
-        req.end();
+        // req.on("error", rslv);
+        // req.end();
       });
     })
   ).catch(() => {
