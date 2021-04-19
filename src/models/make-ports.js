@@ -39,7 +39,7 @@ function setPortTimeout(options) {
   const { portConf, portName, model, args } = options;
   const handler = portConf.timeoutCallback;
   const noTimer = portConf.timeout === 0;
-  const timeout = (portConf.timeout || TIMEOUTSECONDS) * 1000;
+  const timeout = portConf.timeout;
   const maxRetry = portConf.maxRetry || MAXRETRY;
   const timerArgs = getRetries(args);
   const expired = () => timerArgs.count > maxRetry;
@@ -58,8 +58,8 @@ function setPortTimeout(options) {
     model.emit(domainEvents.portRetryFailed(model), options);
     return {
       ...noOp,
-      enabled: true
-    }
+      enabled: true,
+    };
   }
 
   // Retry the port on timeout
